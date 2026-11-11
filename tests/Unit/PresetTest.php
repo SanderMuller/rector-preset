@@ -32,4 +32,4 @@ it('passes withoutSets through the public entry point', function (): void {
 
     expect($app->sets())->toContain(HihahoSetList::ALL)
         ->and($withoutHihaho->sets())->not->toContain(HihahoSetList::ALL);
-});
+})->group('extensions');

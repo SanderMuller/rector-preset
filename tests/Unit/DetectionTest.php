@@ -207,12 +207,13 @@ it('leaves out the extension sets passed to withoutSets', function (): void {
         ->and($sets)->toContain(LaravelSetList::LARAVEL_CODE_QUALITY);
 })->group('extensions');
 
-it('refuses a withoutSets entry that the preset did not detect', function (string $set): void {
-    detected(Profile::App, $this->root, ['driftingly/rector-laravel'], withoutSets: [$set]);
-})->with([
-    'extension not installed' => HihahoSetList::ALL,
-    'prepared set' => SetList::DEAD_CODE,
-])->throws(InvalidArgumentException::class, 'withoutSets only takes extension sets the preset detected')->group('extensions');
+it('refuses a prepared set in withoutSets', function (): void {
+    detected(Profile::App, $this->root, withoutSets: [SetList::DEAD_CODE]);
+})->throws(InvalidArgumentException::class, 'withoutSets only takes extension sets the preset detected');
+
+it('refuses a withoutSets entry that the preset did not detect', function (): void {
+    detected(Profile::App, $this->root, withoutSets: ['/vendor/acme/rector/config/sets/all.php']);
+})->throws(InvalidArgumentException::class, 'Detected: none.');
 
 it('drops a Laravel skip when withoutSets removes the set that registers its rule', function (): void {
     $installed = ['driftingly/rector-laravel'];
