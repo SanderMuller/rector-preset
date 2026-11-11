@@ -53,8 +53,9 @@ final class BaseConfig
     {
         $directory ??= self::CONTAINER_CACHE_DIRECTORY;
 
-        if (str_starts_with($directory, '/')) {
-            return rtrim($directory, '/');
+        // Absolute on Unix ("/tmp") and on Windows ("C:\tmp", "C:/tmp").
+        if (preg_match('#^([A-Za-z]:)?[/\\\\]#', $directory) === 1) {
+            return rtrim($directory, '/\\');
         }
 
         // Strip a leading "./" only: ltrim() with "./" would also eat the dot of ".cache".

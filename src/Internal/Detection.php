@@ -36,11 +36,13 @@ final class Detection
     ];
 
     /**
-     * Skipped when they exist under a scanned folder or the root.
+     * Skipped when they exist under a scanned folder or the root. Testbench keeps a package's
+     * migrations in workbench/database/migrations, which the workbench path would otherwise scan.
      */
     public const array SKIPPED_PATHS = [
         'bootstrap/cache',
         '.cache',
+        'workbench/database/migrations',
     ];
 
     /**
@@ -182,7 +184,7 @@ final class Detection
      * release can have the set list class without one of its constants. That set is left out
      * instead of failing the config with an Error.
      *
-     * @param class-string $setList
+     * @param string $setList a set list class; a class that does not exist gives no sets
      * @param list<string> $names
      * @return list<string>
      */

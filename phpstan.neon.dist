@@ -93,3 +93,37 @@ parameters:
             paths:
                 - tests/*
             reportUnmatched: false
+        # The tests exercise the package's own @internal classes. Pest test files have no
+        # namespace, so PHPStan counts them as outside the SanderMuller root namespace.
+        -
+            identifier: classConstant.internalEnum
+            paths:
+                - tests/*
+        -
+            identifier: staticMethod.internalClass
+            paths:
+                - tests/*
+        -
+            identifier: classConstant.internalClass
+            paths:
+                - tests/*
+        -
+            identifier: parameter.internalEnum
+            paths:
+                - tests/*
+        -
+            identifier: new.internalClass
+            paths:
+                - tests/*
+        -
+            identifier: return.internalClass
+            paths:
+                - tests/*
+        -
+            identifier: property.internalClass
+            paths:
+                - tests/*
+        -
+            identifier: method.internalEnum
+            paths:
+                - tests/*

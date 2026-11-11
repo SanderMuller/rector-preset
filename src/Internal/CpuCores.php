@@ -52,8 +52,7 @@ final readonly class CpuCores
                     return null;
                 }
 
-                // A fixed literal: there is no injection surface.
-                $output = shell_exec('sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null');
+                $output = shell_exec('sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null'); // @phpstan-ignore disallowed.function (fixed command, no user input)
 
                 return is_string($output) ? $output : null;
             },

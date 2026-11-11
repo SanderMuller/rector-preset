@@ -28,9 +28,32 @@ function makeDirectories(string $root, string ...$directories): void
     }
 }
 
-function detected(Profile $profile, string $root, array $installed = [], mixed ...$options): BuilderInspector
-{
-    return new BuilderInspector(PresetHarness::build($profile, PresetHarness::project($root, $installed), ...$options));
+/**
+ * @param list<string> $installed
+ * @param array<string, bool> $sets
+ * @param list<string> $unskip
+ */
+function detected(
+    Profile $profile,
+    string $root,
+    array $installed = [],
+    array $sets = [],
+    ?bool $carbon = null,
+    array $unskip = [],
+    bool $detect = true,
+    ?bool $composerBased = null,
+    ?string $containerCacheDirectory = null,
+): BuilderInspector {
+    return new BuilderInspector(PresetHarness::build(
+        $profile,
+        PresetHarness::project($root, $installed),
+        $sets,
+        $carbon,
+        $unskip,
+        $detect,
+        $composerBased,
+        $containerCacheDirectory,
+    ));
 }
 
 it('scans the app folders that exist, but never database/migrations', function (): void {
@@ -65,6 +88,12 @@ it('skips bootstrap/cache and .cache when they exist', function (): void {
 
     // .cache always exists: the preset creates the container cache directory in it.
     expect($skip)->toContain($this->root . '/bootstrap/cache', $this->root . '/.cache');
+});
+
+it('skips the workbench migrations, which the workbench path would otherwise scan', function (): void {
+    makeDirectories($this->root, 'workbench/database/migrations');
+
+    expect(detected(Profile::Package, $this->root)->skip())->toContain($this->root . '/workbench/database/migrations');
 });
 
 it('leaves the path list empty when none of the folders exists', function (): void {
@@ -183,5 +212,6 @@ it('turns off every detection with detect: false', function (): void {
 
 it('leaves out a set constant that an older extension release does not have', function (): void {
     expect(Detection::constants(PartialSetList::class, ['PRESENT', 'MISSING']))->toBe(['/sets/present.php'])
-        ->and(Detection::constants('Acme\\Missing\\SetList', ['ALL']))->toBe([]);
+        ->and(Detection::constants('Acme\\Missing\\SetList', ['ALL']))
+        ->toBeEmpty();
 });

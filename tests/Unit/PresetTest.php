@@ -11,8 +11,9 @@ it('autoloads the Preset entry point', function (): void {
 it('requires the Rector minor this package version mirrors', function (): void {
     $composer = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/composer.json'), true, flags: JSON_THROW_ON_ERROR);
 
-    expect($composer)->toBeArray()
-        ->and($composer['require']['rector/rector'] ?? null)->toBe('~2.8.0');
+    assert(is_array($composer) && is_array($composer['require'] ?? null));
+
+    expect($composer['require']['rector/rector'] ?? null)->toBe('~2.8.0');
 });
 
 it('builds both presets through the public entry point', function (): void {

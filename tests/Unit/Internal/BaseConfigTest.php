@@ -76,9 +76,13 @@ it('resolves a relative container cache directory against the project root', fun
     expect(BaseConfig::resolveContainerCacheDirectory('/project', $given))->toBe('/project/.cache/rectorContainer');
 })->with(['.cache/rectorContainer', './.cache/rectorContainer', '.cache/rectorContainer/']);
 
-it('keeps an absolute container cache directory', function (): void {
-    expect(BaseConfig::resolveContainerCacheDirectory('/project', '/tmp/cache/'))->toBe('/tmp/cache');
-});
+it('keeps an absolute container cache directory', function (string $given, string $expected): void {
+    expect(BaseConfig::resolveContainerCacheDirectory('/project', $given))->toBe($expected);
+})->with([
+    'unix' => ['/tmp/cache/', '/tmp/cache'],
+    'windows backslash' => ['C:\\cache\\', 'C:\\cache'],
+    'windows slash' => ['C:/cache/', 'C:/cache'],
+]);
 
 it('accepts a container cache directory that already exists', function (): void {
     mkdir($this->root . '/.cache/phpstan', recursive: true);

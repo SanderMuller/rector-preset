@@ -73,7 +73,7 @@ With `detect: true` (the default), the preset looks at your folders and at the p
 
 | When | The preset adds |
 |---|---|
-| The folder exists: `app`, `src`, `config`, `routes`, `database/factories`, `database/seeders`, `tests`, `workbench`, `bootstrap` | The folder to `withPaths()`. `database/migrations` is never scanned. `bootstrap/cache` and `.cache` are skipped. |
+| The folder exists: `app`, `src`, `config`, `routes`, `database/factories`, `database/seeders`, `tests`, `workbench`, `bootstrap` | The folder to `withPaths()`. `database/migrations` is never scanned. `bootstrap/cache`, `.cache` and `workbench/database/migrations` are skipped. |
 | `app()`, or `package(composerBased: true)` | `withComposerBased()` for the installed `laravel/framework`, `symfony/framework-bundle`, `doctrine/orm` and `twig/twig` |
 | `phpunit/phpunit` without `pestphp/pest`, in both presets | `withComposerBased(phpunit: true)` |
 | `driftingly/rector-laravel` | `LARAVEL_CODE_QUALITY`, `LARAVEL_ARRAYACCESS_TO_METHOD_CALL`, `LARAVEL_CONTAINER_STRING_TO_FULLY_QUALIFIED_NAME`, `LARAVEL_FACADE_ALIASES_TO_FULL_NAMES`, `LARAVEL_COLLECTION` |
@@ -83,6 +83,8 @@ With `detect: true` (the default), the preset looks at your folders and at the p
 | `sandermuller/laravel-fluent-validation-rector` | `FluentValidationSetList::ALL`, `POLISH` and `SIMPLIFY` |
 
 `package()` leaves the framework sets off. Rector picks those rules from the installed version, not from the range your package supports, so a package that supports Laravel 11 to 13 would get code that only works on Laravel 13. Pass `composerBased: true` when your package supports one major version. `composerBased: false` turns every composer-based set off, PHPUnit included.
+
+An extension set is added only when its constant exists in the installed release, so an older extension loses that set instead of breaking your config.
 
 Your own `withPaths()` call replaces the detected paths. `detect: false` turns all detection off.
 

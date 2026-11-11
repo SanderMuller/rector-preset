@@ -18,10 +18,26 @@ final class CacheDirectory
      */
     public static function ensure(string $directory): string
     {
-        if (! is_dir($directory) && ! @mkdir($directory, 0o777, true) && ! is_dir($directory)) {
+        if (! is_dir($directory) && ! self::make($directory) && ! is_dir($directory)) {
             throw new RuntimeException(sprintf('Unable to create the Rector cache directory "%s".', $directory));
         }
 
         return $directory;
+    }
+
+    /**
+     * mkdir() without its warning: the caller reports the failure with the directory name. An error
+     * handler is used instead of @, because a test runner or error reporter can still see an
+     * @-suppressed warning.
+     */
+    private static function make(string $directory): bool
+    {
+        set_error_handler(static fn (): bool => true);
+
+        try {
+            return mkdir($directory, 0o777, true);
+        } finally {
+            restore_error_handler();
+        }
     }
 }

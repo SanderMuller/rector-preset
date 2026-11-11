@@ -70,7 +70,7 @@ function runRector(string $projectRoot, string $presetCall): array
     $errors = [];
 
     foreach ([...(array) ($result['errors'] ?? []), ...(array) ($result['fatal_errors'] ?? [])] as $error) {
-        $message = is_array($error) ? (string) json_encode($error) : (string) $error;
+        $message = is_string($error) ? $error : (string) json_encode($error);
 
         if (! str_starts_with($message, 'Deprecated: ') && ! str_starts_with($message, 'PHP Deprecated: ')) {
             $errors[] = $message;

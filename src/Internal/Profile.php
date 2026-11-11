@@ -5,6 +5,7 @@ namespace SanderMuller\RectorPreset\Internal;
 use Rector\Arguments\Rector\ClassMethod\ArgumentAdderRector;
 use Rector\CodeQuality\Rector\ClassMethod\InlineArrayReturnAssignRector;
 use Rector\CodeQuality\Rector\If_\ExplicitNullableObjectInstanceRector;
+use Rector\Contract\Rector\RectorInterface;
 use Rector\DeadCode\Rector\ClassMethod\RemoveUselessParamTagRector;
 use Rector\DeadCode\Rector\ClassMethod\RemoveUselessReturnTagRector;
 use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
@@ -111,7 +112,7 @@ enum Profile
     }
 
     /**
-     * @return list<string>
+     * @return list<class-string<RectorInterface>>
      */
     public function rules(bool $privatization): array
     {

@@ -30,9 +30,32 @@ afterEach(function (): void {
     PresetHarness::remove($this->root);
 });
 
-function presetOf(Profile $profile, string $root, array $installed = [], mixed ...$options): BuilderInspector
-{
-    return new BuilderInspector(PresetHarness::build($profile, PresetHarness::project($root, $installed), ...$options));
+/**
+ * @param list<string> $installed
+ * @param array<string, bool> $sets
+ * @param list<string> $unskip
+ */
+function presetOf(
+    Profile $profile,
+    string $root,
+    array $installed = [],
+    array $sets = [],
+    ?bool $carbon = null,
+    array $unskip = [],
+    bool $detect = true,
+    ?bool $composerBased = null,
+    ?string $containerCacheDirectory = null,
+): BuilderInspector {
+    return new BuilderInspector(PresetHarness::build(
+        $profile,
+        PresetHarness::project($root, $installed),
+        $sets,
+        $carbon,
+        $unskip,
+        $detect,
+        $composerBased,
+        $containerCacheDirectory,
+    ));
 }
 
 it('turns on the package prepared sets', function (): void {
@@ -47,6 +70,7 @@ it('turns on the package prepared sets', function (): void {
         SetList::PRIVATIZATION,
         SetList::RECTOR_PRESET,
         PHPUnitSetList::PHPUNIT_CODE_QUALITY,
+        // @phpstan-ignore classConstant.deprecated, classConstant.deprecated (the test checks that the deprecated sets stay off)
     )->not->toContain(SetList::INSTANCEOF, SetList::EARLY_RETURN, SetList::CARBON);
 });
 
@@ -97,7 +121,7 @@ it('skips the package rules', function (): void {
 it('skips the app rules, including the rector-laravel ones when they exist', function (): void {
     $ruleSkips = array_values(array_filter(
         presetOf(Profile::App, $this->root, ['driftingly/rector-laravel'])->skip(),
-        static fn (string $skip): bool => ! str_starts_with($skip, '/'),
+        static fn (mixed $skip): bool => is_string($skip) && ! str_starts_with($skip, '/'),
     ));
 
     expect($ruleSkips)->toBe([
