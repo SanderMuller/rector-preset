@@ -1,0 +1,39 @@
+name: skip-health
+
+# Rector deletes, renames and deprecates rules in patch releases. The presets skip a rule only when
+# its class exists, so consumers keep working, but a renamed rule would lose its skip without notice.
+# This job installs the newest Rector patch that ~2.8.0 allows and fails when a skipped or added rule
+# no longer exists or is deprecated.
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  skip-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Install the newest allowed versions
+        run: composer update --prefer-stable --prefer-dist --no-interaction
+
+      - name: Check the skipped and added rules
+        run: vendor/bin/pest --ci --group=skip-health
+
+      - name: Boot both presets
+        run: vendor/bin/pest --ci tests/Feature/BootTest.php

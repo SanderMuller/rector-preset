@@ -1,0 +1,21 @@
+version: 2
+updates:
+
+  - package-ecosystem: "composer"
+    directory: "/"
+    # This is a library: raise "~2.8.0" to "~2.9.0" when Rector releases a new minor, instead of
+    # widening the range. The package version follows the Rector minor (see PUBLIC_API.md).
+    versioning-strategy: increase
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    cooldown:
+      default-days: 7
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    cooldown:
+      default-days: 7
