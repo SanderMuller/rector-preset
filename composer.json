@@ -41,7 +41,7 @@
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
-        "sandermuller/boost-skills": "^2.27.0",
+        "sandermuller/boost-skills": "^2.55.0",
         "sandermuller/laravel-fluent-validation-rector": "^1.11",
         "sandermuller/package-boost-php": "^1.0",
         "spaze/phpstan-disallowed-calls": "^4.13",
