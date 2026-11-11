@@ -1,6 +1,7 @@
 name: pint-check
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - '**.php'
