@@ -8,7 +8,7 @@ Shared [Rector](https://getrector.com) presets for Laravel applications and Comp
 composer require --dev sandermuller/rector-preset:~2.8.0
 ```
 
-Requires PHP 8.4 and `rector/rector` 2.8.
+Requires PHP 8.4 and `rector/rector` 2.8. The preset turns on the sets of the Rector extensions you have installed, so it refuses extension versions that fail on Rector 2.8: `driftingly/rector-laravel` below 2.7.2 and `hihaho/rector-rules` below 1.2.1.
 
 ## Usage
 
