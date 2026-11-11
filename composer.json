@@ -45,7 +45,7 @@
         "sandermuller/laravel-fluent-validation-rector": "^1.11",
         "sandermuller/package-boost-php": "^1.0",
         "spaze/phpstan-disallowed-calls": "^4.13",
-        "stolt/lean-package-validator": "^6.0.1",
+        "stolt/lean-package-validator": "^6.5.0",
         "symfony/process": "^8.1",
         "symplify/phpstan-rules": "^14.19",
         "tomasvotruba/cognitive-complexity": "^1.2",
