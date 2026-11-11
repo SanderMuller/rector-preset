@@ -3,6 +3,7 @@
 namespace SanderMuller\RectorPreset\Internal;
 
 use Hihaho\RectorRules\Set\HihahoSetList;
+use InvalidArgumentException;
 use Pest\Rector\Set\PestSetList as OfficialPestSetList;
 use Rector\Configuration\RectorConfigBuilder;
 use RectorLaravel\Set\LaravelSetList;
@@ -50,6 +51,8 @@ final class Detection
      *                            framework. package() turns on PHPUnit only: Rector binds the
      *                            framework rules to the installed version, not the range a package
      *                            supports. true: every framework. false: none.
+     * @param list<string> $withoutSets detected extension sets to leave out
+     * @return list<string> the extension sets it turned on
      */
     public static function apply(
         RectorConfigBuilder $builder,
@@ -57,7 +60,8 @@ final class Detection
         string $projectRoot,
         Profile $profile,
         ?bool $composerBased,
-    ): void {
+        array $withoutSets = [],
+    ): array {
         $paths = self::paths($projectRoot);
 
         if ($paths !== []) {
@@ -76,11 +80,24 @@ final class Detection
             $builder->withComposerBased(...$flags);
         }
 
-        $sets = self::extensionSets($project);
+        $detected = self::extensionSets($project);
+        $unknown = array_values(array_diff($withoutSets, $detected));
+
+        if ($unknown !== []) {
+            throw new InvalidArgumentException(sprintf(
+                'withoutSets only takes extension sets the preset detected. Not detected: %s. Detected: %s.',
+                implode(', ', $unknown),
+                $detected === [] ? 'none' : implode(', ', $detected),
+            ));
+        }
+
+        $sets = array_values(array_diff($detected, $withoutSets));
 
         if ($sets !== []) {
             $builder->withSets($sets);
         }
+
+        return $sets;
     }
 
     /**

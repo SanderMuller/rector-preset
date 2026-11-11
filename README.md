@@ -86,6 +86,16 @@ With `detect: true` (the default), the preset looks at your folders and at the p
 
 An extension set is added only when its constant exists in the installed release, so an older extension loses that set instead of breaking your config.
 
+To leave out one detected extension set, pass its constant to `withoutSets`. The other detected sets stay on:
+
+```php
+return Preset::app(withoutSets: [Hihaho\RectorRules\Set\HihahoSetList::ALL])
+    ->withPhpSets()
+    ->withRules([/* the hihaho rules you do use */]);
+```
+
+`withoutSets` throws an `InvalidArgumentException` for a set the preset did not detect, for example a prepared set such as `SetList::DEAD_CODE`. Turn those off with their parameter.
+
 Your own `withPaths()` call replaces the detected paths. `detect: false` turns all detection off.
 
 ## Parameters
@@ -101,6 +111,7 @@ Both methods take the same named parameters:
 | `unskip` | `[]` | Rules to remove from the preset's skip list |
 | `detect` | `true` | Folder and package detection |
 | `composerBased` | `null` | `null`: frameworks in `app()`, PHPUnit only in `package()`; `true`: all; `false`: none |
+| `withoutSets` | `[]` | Detected extension sets to leave out |
 
 ## Things to know
 

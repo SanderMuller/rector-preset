@@ -70,6 +70,7 @@ final class PresetHarness
      *
      * @param array<string, bool> $sets prepared-set overrides
      * @param list<string> $unskip
+     * @param list<string> $withoutSets
      */
     public static function build(
         Profile $profile,
@@ -80,6 +81,7 @@ final class PresetHarness
         bool $detect = true,
         ?bool $composerBased = null,
         ?string $containerCacheDirectory = null,
+        array $withoutSets = [],
     ): RectorConfigBuilder {
         $isApp = $profile === Profile::App;
         $defaults = [
@@ -114,6 +116,7 @@ final class PresetHarness
             $unskip,
             $detect,
             $composerBased,
+            $withoutSets,
         );
     }
 }

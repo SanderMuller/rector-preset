@@ -18,6 +18,7 @@ use Rector\Privatization\Rector\Property\PrivatizeFinalClassPropertyRector;
 use Rector\TypeDeclaration\Rector\ArrowFunction\AddArrowFunctionReturnTypeRector;
 use RectorLaravel\Rector\Coalesce\ApplyDefaultInsteadOfNullCoalesceRector;
 use RectorLaravel\Rector\MethodCall\ReplaceServiceContainerCallArgRector;
+use RectorLaravel\Set\LaravelSetList;
 
 /**
  * What separates the two presets: their skip lists and the rules the app preset adds.
@@ -49,17 +50,18 @@ enum Profile
      * set is off. The PHP version sets come from the repo's own withPhpSets() call, which the preset
      * cannot see; their skips always stay.
      *
-     * @param bool $laravelSets true when the rector-laravel sets are on
+     * @param list<string> $extensionSets the extension sets the preset turned on
      * @return list<string>
      */
-    public function activeSkips(PreparedSets $sets, bool $laravelSets): array
+    public function activeSkips(PreparedSets $sets, array $extensionSets): array
     {
         $active = [];
 
         foreach ($this->skipSources() as $rule => $source) {
             $isOn = match ($source) {
                 'php' => true,
-                'laravel' => $laravelSets,
+                'laravelCodeQuality' => self::hasLaravelSet($extensionSets, 'LARAVEL_CODE_QUALITY'),
+                'laravelContainerString' => self::hasLaravelSet($extensionSets, 'LARAVEL_CONTAINER_STRING_TO_FULLY_QUALIFIED_NAME'),
                 'deadCode' => $sets->deadCode,
                 'codeQuality' => $sets->codeQuality,
                 'typeDeclarations' => $sets->typeDeclarations,
@@ -76,9 +78,17 @@ enum Profile
     }
 
     /**
+     * @param list<string> $extensionSets
+     */
+    private static function hasLaravelSet(array $extensionSets, string $name): bool
+    {
+        return array_intersect(Detection::constants(LaravelSetList::class, [$name]), $extensionSets) !== [];
+    }
+
+    /**
      * Each skipped rule, with the set that registers it.
      *
-     * @return array<string, 'php'|'laravel'|'deadCode'|'codeQuality'|'typeDeclarations'|'privatization'|'phpunitCodeQuality'>
+     * @return array<string, 'php'|'laravelCodeQuality'|'laravelContainerString'|'deadCode'|'codeQuality'|'typeDeclarations'|'privatization'|'phpunitCodeQuality'>
      */
     private function skipSources(): array
     {
@@ -91,9 +101,8 @@ enum Profile
                 RemoveUselessReturnTagRector::class => 'deadCode',
             ],
             self::App => [
-                // driftingly/rector-laravel: only skipped when it is installed (SkipList checks class_exists).
-                ApplyDefaultInsteadOfNullCoalesceRector::class => 'laravel',
-                ReplaceServiceContainerCallArgRector::class => 'laravel',
+                ApplyDefaultInsteadOfNullCoalesceRector::class => 'laravelCodeQuality',
+                ReplaceServiceContainerCallArgRector::class => 'laravelContainerString',
                 ArgumentAdderRector::class => 'php',
                 ClosureToArrowFunctionRector::class => 'php',
                 PreferPHPUnitThisCallRector::class => 'phpunitCodeQuality',

@@ -3,7 +3,10 @@
 use Hihaho\RectorRules\Set\HihahoSetList;
 use Pest\Rector\Set\PestSetList as OfficialPestSetList;
 use Rector\PHPUnit\Set\PHPUnitSetList;
+use Rector\Set\ValueObject\SetList;
 use Rector\Symfony\Set\SymfonySetList;
+use RectorLaravel\Rector\Coalesce\ApplyDefaultInsteadOfNullCoalesceRector;
+use RectorLaravel\Rector\MethodCall\ReplaceServiceContainerCallArgRector;
 use RectorLaravel\Set\LaravelSetList;
 use RectorPest\Set\PestSetList as CommunityPestSetList;
 use SanderMuller\FluentValidationRector\Set\FluentValidationSetList;
@@ -32,6 +35,7 @@ function makeDirectories(string $root, string ...$directories): void
  * @param list<string> $installed
  * @param array<string, bool> $sets
  * @param list<string> $unskip
+ * @param list<string> $withoutSets
  */
 function detected(
     Profile $profile,
@@ -43,6 +47,7 @@ function detected(
     bool $detect = true,
     ?bool $composerBased = null,
     ?string $containerCacheDirectory = null,
+    array $withoutSets = [],
 ): BuilderInspector {
     return new BuilderInspector(PresetHarness::build(
         $profile,
@@ -53,6 +58,7 @@ function detected(
         $detect,
         $composerBased,
         $containerCacheDirectory,
+        $withoutSets,
     ));
 }
 
@@ -192,6 +198,34 @@ it('adds the FluentValidation sets, without SCHEMA', function (): void {
     expect(detected(Profile::App, $this->root, ['sandermuller/laravel-fluent-validation-rector'])->sets())
         ->toContain(FluentValidationSetList::ALL, FluentValidationSetList::POLISH, FluentValidationSetList::SIMPLIFY)
         ->not->toContain(FluentValidationSetList::SCHEMA);
+})->group('extensions');
+
+it('leaves out the extension sets passed to withoutSets', function (): void {
+    $sets = detected(Profile::App, $this->root, ['hihaho/rector-rules', 'driftingly/rector-laravel'], withoutSets: [HihahoSetList::ALL])->sets();
+
+    expect($sets)->not->toContain(HihahoSetList::ALL)
+        ->and($sets)->toContain(LaravelSetList::LARAVEL_CODE_QUALITY);
+})->group('extensions');
+
+it('refuses a withoutSets entry that the preset did not detect', function (string $set): void {
+    detected(Profile::App, $this->root, ['driftingly/rector-laravel'], withoutSets: [$set]);
+})->with([
+    'extension not installed' => HihahoSetList::ALL,
+    'prepared set' => SetList::DEAD_CODE,
+])->throws(InvalidArgumentException::class, 'withoutSets only takes extension sets the preset detected')->group('extensions');
+
+it('drops a Laravel skip when withoutSets removes the set that registers its rule', function (): void {
+    $installed = ['driftingly/rector-laravel'];
+
+    $all = detected(Profile::App, $this->root, $installed)->skip();
+    $withoutCodeQuality = detected(Profile::App, $this->root, $installed, withoutSets: [LaravelSetList::LARAVEL_CODE_QUALITY])->skip();
+    $withoutContainer = detected(Profile::App, $this->root, $installed, withoutSets: [LaravelSetList::LARAVEL_CONTAINER_STRING_TO_FULLY_QUALIFIED_NAME])->skip();
+
+    expect($all)->toContain(ApplyDefaultInsteadOfNullCoalesceRector::class, ReplaceServiceContainerCallArgRector::class)
+        ->and($withoutCodeQuality)->not->toContain(ApplyDefaultInsteadOfNullCoalesceRector::class)
+        ->and($withoutCodeQuality)->toContain(ReplaceServiceContainerCallArgRector::class)
+        ->and($withoutContainer)->not->toContain(ReplaceServiceContainerCallArgRector::class)
+        ->and($withoutContainer)->toContain(ApplyDefaultInsteadOfNullCoalesceRector::class);
 })->group('extensions');
 
 it('turns off every detection with detect: false', function (): void {

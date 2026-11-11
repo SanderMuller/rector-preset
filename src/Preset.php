@@ -28,6 +28,8 @@ final class Preset
      * @param bool $detect false turns off every detection: paths, composer-based and extension sets
      * @param ?bool $composerBased null: version-bound sets for the installed Laravel, Symfony, Doctrine and Twig,
      *                            plus PHPUnit when the tests are not Pest; false: none
+     * @param list<string> $withoutSets detected extension sets to leave out, for example [HihahoSetList::ALL];
+     *                                  a set the preset did not detect throws an InvalidArgumentException
      */
     public static function app(
         ?string $projectRoot = null,
@@ -44,6 +46,7 @@ final class Preset
         array $unskip = [],
         bool $detect = true,
         ?bool $composerBased = null,
+        array $withoutSets = [],
     ): RectorConfigBuilder {
         $project = ComposerProject::current();
 
@@ -67,6 +70,7 @@ final class Preset
             $unskip,
             $detect,
             $composerBased,
+            $withoutSets,
         );
     }
 
@@ -83,6 +87,8 @@ final class Preset
      *                            range, so a package that supports several Laravel majors would get
      *                            code for the newest one only. true: every installed framework.
      *                            false: none
+     * @param list<string> $withoutSets detected extension sets to leave out, for example [HihahoSetList::ALL];
+     *                                  a set the preset did not detect throws an InvalidArgumentException
      */
     public static function package(
         ?string $projectRoot = null,
@@ -99,6 +105,7 @@ final class Preset
         array $unskip = [],
         bool $detect = true,
         ?bool $composerBased = null,
+        array $withoutSets = [],
     ): RectorConfigBuilder {
         $project = ComposerProject::current();
 
@@ -122,6 +129,7 @@ final class Preset
             $unskip,
             $detect,
             $composerBased,
+            $withoutSets,
         );
     }
 }

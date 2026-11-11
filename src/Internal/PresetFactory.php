@@ -14,6 +14,7 @@ final class PresetFactory
 {
     /**
      * @param list<string> $unskip
+     * @param list<string> $withoutSets
      */
     public static function build(
         Profile $profile,
@@ -25,17 +26,17 @@ final class PresetFactory
         array $unskip,
         bool $detect = true,
         ?bool $composerBased = null,
+        array $withoutSets = [],
     ): RectorConfigBuilder {
         $root = ProjectRoot::resolve($projectRoot, $project);
 
         $builder = BaseConfig::configure($root, $containerCacheDirectory, $cpuCores, $preparedSets);
 
-        if ($detect) {
-            Detection::apply($builder, $project, $root, $profile, $composerBased);
-        }
+        $extensionSets = $detect
+            ? Detection::apply($builder, $project, $root, $profile, $composerBased, $withoutSets)
+            : [];
 
-        $laravelSets = $detect && $project->isInstalled('driftingly/rector-laravel');
-        $skips = SkipList::resolve($profile->activeSkips($preparedSets, $laravelSets), $unskip);
+        $skips = SkipList::resolve($profile->activeSkips($preparedSets, $extensionSets), $unskip);
 
         if ($skips !== []) {
             $builder->withSkip($skips);
