@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use Rector\CodingStyle\Rector\Catch_\CatchExceptionNameMatchingTypeRector;
 use SanderMuller\RectorPreset\Tests\Support\PresetHarness;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
@@ -40,14 +41,7 @@ function copyFixture(string $fixture, string $target): void
 function runRector(string $projectRoot, string $presetCall): array
 {
     $packageRoot = dirname(__DIR__, 2);
-    $config = <<<PHP
-        <?php declare(strict_types=1);
-
-        use SanderMuller\\RectorPreset\\Preset;
-
-        return {$presetCall};
-        PHP;
-    file_put_contents($projectRoot . '/rector.php', $config);
+    writePresetConfig($projectRoot, $presetCall);
 
     $process = new Process(
         [(string) new PhpExecutableFinder()->find(), '-d', 'error_reporting=' . (E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED), $packageRoot . '/vendor/bin/rector', 'process', '--dry-run', '--output-format=json', '--no-progress-bar', '--config=' . $projectRoot . '/rector.php'],
@@ -94,6 +88,45 @@ function runRector(string $projectRoot, string $presetCall): array
         'changed' => $changed,
         'errors' => $errors,
     ];
+}
+
+/**
+ * Runs Rector in dry-run mode and returns the first line of each warning it prints.
+ *
+ * Rector prints its warnings, for example about a skipped rule that no set registers, only in the
+ * console format. laravel/pao forces the JSON format when it detects an AI agent, so PAO_DISABLE
+ * turns it off.
+ *
+ * @return list<string>
+ */
+function rectorWarnings(string $projectRoot, string $presetCall): array
+{
+    $packageRoot = dirname(__DIR__, 2);
+    writePresetConfig($projectRoot, $presetCall);
+
+    $process = new Process(
+        [(string) new PhpExecutableFinder()->find(), '-d', 'error_reporting=' . (E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED), $packageRoot . '/vendor/bin/rector', 'process', '--dry-run', '--output-format=console', '--no-progress-bar', '--config=' . $projectRoot . '/rector.php'],
+        $packageRoot,
+        ['PAO_DISABLE' => '1'],
+        timeout: 300,
+    );
+    $process->run();
+
+    preg_match_all('/^\s*\[WARNING\].*$/m', $process->getOutput() . "\n" . $process->getErrorOutput(), $matches);
+
+    return array_map(trim(...), $matches[0]);
+}
+
+function writePresetConfig(string $projectRoot, string $presetCall): void
+{
+    $config = <<<PHP
+        <?php declare(strict_types=1);
+
+        use SanderMuller\\RectorPreset\\Preset;
+
+        return {$presetCall};
+        PHP;
+    file_put_contents($projectRoot . '/rector.php', $config);
 }
 
 beforeEach(function (): void {
@@ -161,6 +194,27 @@ it('rejects withTypeCoverageDocblockLevel() on the package preset unless typeDec
     expect(implode("\n", $rejected['errors']))->toContain('type declaration docblocks')
         ->and($accepted['errors'])
         ->toBeEmpty();
+});
+
+it('runs the preset without a Rector warning', function (string $fixture, string $presetCall): void {
+    copyFixture($fixture, $this->root);
+
+    expect(rectorWarnings($this->root, $presetCall))->toBeEmpty();
+})->with([
+    'package' => ['package-project', 'Preset::package(projectRoot: __DIR__)->withPhpSets(php84: true)'],
+    'app' => ['laravel-app', 'Preset::app(projectRoot: __DIR__)->withPhpSets(php84: true)'],
+]);
+
+it('proves the warning check sees a skipped rule that no set registers', function (): void {
+    copyFixture('laravel-app', $this->root);
+
+    // The app preset turns codingStyle off, and only that set registers this rule.
+    $warnings = rectorWarnings(
+        $this->root,
+        'Preset::app(projectRoot: __DIR__)->withPhpSets(php84: true)->withSkip([' . CatchExceptionNameMatchingTypeRector::class . '::class])',
+    );
+
+    expect(implode("\n", $warnings))->toContain('never registered');
 });
 
 it('boots the README example', function (): void {
