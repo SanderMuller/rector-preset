@@ -38,7 +38,6 @@ use SanderMuller\BoostCore\Skills\Remote\RemoteSkillSource;
 return BoostConfig::configure()
     ->withAgents([
         Agent::CLAUDE_CODE,
-        Agent::COPILOT,
         Agent::CODEX,
     ])
     ->withAllowedVendors([
