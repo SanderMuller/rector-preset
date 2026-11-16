@@ -1,6 +1,12 @@
 # Rector Preset
 
-Shared [Rector](https://getrector.com) presets for Laravel applications and Composer packages. A preset sets up the cache, the parallel workers, the prepared sets, the shared skips and the extension sets for the packages you have installed. Your `rector.php` keeps only what is specific to your project.
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/sandermuller/rector-preset.svg?style=flat-square)](https://packagist.org/packages/sandermuller/rector-preset)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/sandermuller/rector-preset/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/sandermuller/rector-preset/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub PHPStan Action Status](https://img.shields.io/github/actions/workflow/status/sandermuller/rector-preset/phpstan.yml?branch=main&label=phpstan&style=flat-square)](https://github.com/sandermuller/rector-preset/actions?query=workflow%3Aphpstan+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/sandermuller/rector-preset.svg?style=flat-square)](https://packagist.org/packages/sandermuller/rector-preset)
+[![License](https://img.shields.io/packagist/l/sandermuller/rector-preset.svg?style=flat-square)](LICENSE)
+
+Every project copies the same [Rector](https://getrector.com) setup into its `rector.php`, and the copies drift apart with each Rector release. This package keeps that setup in one preset for Laravel applications and one for Composer packages, so your `rector.php` holds only what is specific to your project.
 
 ## Installation
 
@@ -8,7 +14,7 @@ Shared [Rector](https://getrector.com) presets for Laravel applications and Comp
 composer require --dev sandermuller/rector-preset:~2.8.0
 ```
 
-Requires PHP 8.4 and `rector/rector` 2.8. The preset turns on the sets of the Rector extensions you have installed, so it refuses extension versions that fail on Rector 2.8: `driftingly/rector-laravel` below 2.7.2 and `hihaho/rector-rules` below 1.2.1.
+Requires PHP 8.4 and `rector/rector` 2.8. The preset refuses Rector extension versions that fail on Rector 2.8: `driftingly/rector-laravel` below 2.7.2 and `hihaho/rector-rules` below 1.2.1.
 
 ## Usage
 
@@ -65,7 +71,7 @@ Both presets skip `TernaryToNullsafeCoalesceRector` (its output fails PHPStan's 
 
 `app()` also skips `ArgumentAdderRector`, `ClosureToArrowFunctionRector`, `PreferPHPUnitThisCallRector` and `RestoreDefaultNullToNullableTypePropertyRector`, plus rector-laravel's `ApplyDefaultInsteadOfNullCoalesceRector` and `ReplaceServiceContainerCallArgRector`. It adds `PreferPHPUnitSelfCallRector`, and `PrivatizeFinalClassPropertyRector` while `privatization` is off.
 
-A skip is added only when its rule class exists, so a Rector release that deletes a rule does not break your config. A skip is also left out when you turn off the set that registers its rule, because Rector warns on every run about a skipped rule that is never registered. The skips for PHP-version rules (`TernaryToNullsafeCoalesceRector`, `ArgumentAdderRector`, `ClosureToArrowFunctionRector`, `RestoreDefaultNullToNullableTypePropertyRector`) always stay, so call `withPhpSets()` in your `rector.php`.
+A skip is left out when its rule class does not exist, or when you turn off the set that registers the rule. The skips for PHP-version rules (`TernaryToNullsafeCoalesceRector`, `ArgumentAdderRector`, `ClosureToArrowFunctionRector`, `RestoreDefaultNullToNullableTypePropertyRector`) always stay, so call `withPhpSets()` in your `rector.php`.
 
 ## Detection
 
@@ -82,9 +88,9 @@ With `detect: true` (the default), the preset looks at your folders and at the p
 | `hihaho/rector-rules` | `HihahoSetList::ALL` |
 | `sandermuller/laravel-fluent-validation-rector` | `FluentValidationSetList::ALL`, `POLISH` and `SIMPLIFY` |
 
-`package()` leaves the framework sets off. Rector picks those rules from the installed version, not from the range your package supports, so a package that supports Laravel 11 to 13 would get code that only works on Laravel 13. Pass `composerBased: true` when your package supports one major version. `composerBased: false` turns every composer-based set off, PHPUnit included.
+`package()` leaves the framework sets off, because Rector picks their rules from the installed version, not from the range your package supports. Pass `composerBased: true` when your package supports one major version. `composerBased: false` turns every composer-based set off, PHPUnit included.
 
-An extension set is added only when its constant exists in the installed release, so an older extension loses that set instead of breaking your config.
+An extension set is added only when its constant exists in the installed release.
 
 To leave out one detected extension set, pass its constant to `withoutSets`. The other detected sets stay on:
 
@@ -122,7 +128,7 @@ Both methods take the same named parameters:
 
 ## Versioning
 
-The major and minor version follow Rector: `2.8.x` requires `rector/rector: ~2.8.0`. The patch number belongs to this package. A patch release can change what the presets do, and its release notes list each change. Run `rector --dry-run` in CI to see the effect of an update. See [PUBLIC_API.md](PUBLIC_API.md).
+The major and minor version follow Rector: `2.8.x` requires `rector/rector: ~2.8.0`. A patch release can change what the presets do, and its release notes list each change. Run `rector --dry-run` in CI to see the effect of an update. See [PUBLIC_API.md](PUBLIC_API.md).
 
 ## Testing
 
