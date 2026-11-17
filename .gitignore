@@ -45,5 +45,4 @@ phpstan.neon
 .claude/commands/
 .claude/skills/
 .config/boost/
-.github/prompts/
 # <<< boost (managed) <<<
