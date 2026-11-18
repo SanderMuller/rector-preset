@@ -30,7 +30,7 @@
         "laravel/pint": "^1.29",
         "mrpunyapal/rector-pest": "^0.2.17",
         "nunomaduro/collision": "^8.0",
-        "orchestra/testbench": "^11.0",
+        "orchestra/testbench": "^11.3",
         "pestphp/pest": "^5.3",
         "pestphp/pest-plugin-agent": "^5.0",
         "pestphp/pest-plugin-arch": "^5.0",
